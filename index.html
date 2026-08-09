@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#07130d">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Zine 3D">
+    <title>Zine 3D</title>
+    <link rel="icon" type="image/png" href="TemplateData/icon.png">
+    <link rel="apple-touch-icon" href="TemplateData/icon.png">
+    <link rel="stylesheet" href="TemplateData/style.css">
+    <link rel="manifest" href="manifest.webmanifest">
+  </head>
+  <body>
+    <main id="unity-container" aria-label="Zine 3D game">
+      <canvas id="unity-canvas" width=960 height=600 tabindex="-1"></canvas>
+
+      <section id="unity-loading-bar" aria-live="polite">
+        <img id="zine-logo" src="TemplateData/icon.png" alt="Zine 3D">
+        <div id="unity-build-title">Zine 3D</div>
+        <div id="unity-progress-bar-empty">
+          <div id="unity-progress-bar-full"></div>
+        </div>
+        <div id="loading-label">게임을 불러오는 중…</div>
+      </section>
+
+      <button id="fullscreen-button" type="button" aria-label="전체 화면">⛶</button>
+      <div id="install-hint">Safari 공유 버튼에서 ‘홈 화면에 추가’를 선택하면 앱처럼 실행할 수 있습니다.</div>
+      <div id="orientation-hint">아이폰을 가로로 돌려주세요.</div>
+      <div id="unity-warning"></div>
+    </main>
+
+    <script>
+      window.addEventListener("load", function () {
+        if ("serviceWorker" in navigator) {
+          navigator.serviceWorker.register("ServiceWorker.js");
+        }
+      });
+
+      var container = document.querySelector("#unity-container");
+      var canvas = document.querySelector("#unity-canvas");
+      var loadingBar = document.querySelector("#unity-loading-bar");
+      var progressBarFull = document.querySelector("#unity-progress-bar-full");
+      var warningBanner = document.querySelector("#unity-warning");
+      var fullscreenButton = document.querySelector("#fullscreen-button");
+      var installHint = document.querySelector("#install-hint");
+      var isAppleMobile = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+      var isStandalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+
+      if (isAppleMobile && !isStandalone) {
+        installHint.classList.add("is-visible");
+        window.setTimeout(function () {
+          installHint.classList.remove("is-visible");
+        }, 9000);
+      }
+
+      function unityShowBanner(message, type) {
+        var item = document.createElement("div");
+        item.textContent = message;
+        item.className = "warning-item " + (type || "");
+        warningBanner.appendChild(item);
+        warningBanner.classList.add("is-visible");
+
+        if (type !== "error") {
+          window.setTimeout(function () {
+            item.remove();
+            if (!warningBanner.children.length) {
+              warningBanner.classList.remove("is-visible");
+            }
+          }, 5000);
+        }
+      }
+
+      var buildUrl = "Build";
+      var loaderUrl = buildUrl + "/b23dd96997961653e2825455633aac82.loader.js";
+      var config = {
+        dataUrl: buildUrl + "/9026780b0a808938b7963cf141747122.data.unityweb",
+        frameworkUrl: buildUrl + "/b0663254000dd8daf4cf3a624ba37862.framework.js.unityweb",
+        codeUrl: buildUrl + "/361d5e0c47a350a8dc461610527df2ed.wasm.unityweb",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "ghtnql",
+        productName: "Zine 3D",
+        productVersion: "2.3.0",
+        autoSyncPersistentDataPath: true,
+        showBanner: unityShowBanner
+      };
+
+      if (/iPhone|iPad|iPod|Android|Mobile/i.test(navigator.userAgent)) {
+        config.devicePixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
+      }
+
+      loadingBar.classList.add("is-visible");
+
+      var script = document.createElement("script");
+      script.src = loaderUrl;
+      script.onload = function () {
+        createUnityInstance(canvas, config, function (progress) {
+          progressBarFull.style.width = (100 * progress) + "%";
+        }).then(function (unityInstance) {
+          loadingBar.classList.remove("is-visible");
+          canvas.focus();
+
+          if (document.fullscreenEnabled && !isAppleMobile) {
+            fullscreenButton.classList.add("is-visible");
+            fullscreenButton.addEventListener("click", function () {
+              unityInstance.SetFullscreen(1);
+            });
+          }
+        }).catch(function (message) {
+          unityShowBanner(message, "error");
+        });
+      };
+      script.onerror = function () {
+        unityShowBanner("게임 로더를 내려받지 못했습니다. 네트워크 연결을 확인해주세요.", "error");
+      };
+      document.body.appendChild(script);
+    </script>
+  </body>
+</html>
