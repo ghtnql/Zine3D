@@ -71,7 +71,8 @@ body {
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
+  object-position: center 35%;
 }
 
 #start-panel {
@@ -228,7 +229,8 @@ body {
 }
 
 @media (orientation: portrait) {
-  #unity-container {
+  #unity-container,
+  #start-screen {
     top: 50%;
     left: 50%;
     right: auto;
