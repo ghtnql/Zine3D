@@ -195,3 +195,32 @@ body {
     transform-origin: center;
   }
 }
+
+@media (orientation: portrait) {
+  html.fullscreen-requested #unity-container {
+    top: 0;
+    left: 0;
+    right: auto;
+    bottom: auto;
+    width: 100vw;
+    height: 100vh;
+    transform: none;
+  }
+
+  #unity-canvas.is-landscape-fullscreen {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    right: auto;
+    bottom: auto;
+    width: 100vh !important;
+    width: 100dvh !important;
+    height: 100vw !important;
+    height: 100dvw !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0;
+    transform: translate(-50%, -50%) rotate(90deg);
+    transform-origin: center;
+  }
+}
