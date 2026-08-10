@@ -1,4 +1,4 @@
-const cacheName = "ghtnql-Zine 3D-2.3.0-fullscreen-canvas-v3";
+const cacheName = "ghtnql-Zine 3D-2.3.0-webview-fallback-v4";
 const contentToCache = [
   "./",
   "index.html",
