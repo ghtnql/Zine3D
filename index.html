@@ -46,6 +46,11 @@
       var fullscreenButton = document.querySelector("#fullscreen-button");
       var isStandalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
 
+      function markLandscapeFullscreenRequested() {
+        document.documentElement.classList.add("fullscreen-requested");
+        canvas.classList.add("is-landscape-fullscreen");
+      }
+
       function lockLandscape() {
         if (screen.orientation && typeof screen.orientation.lock === "function") {
           screen.orientation.lock("landscape").catch(function () {
@@ -113,6 +118,7 @@
           if (document.fullscreenEnabled) {
             fullscreenButton.classList.add("is-visible");
             fullscreenButton.addEventListener("click", function () {
+              markLandscapeFullscreenRequested();
               unityInstance.SetFullscreen(1);
             });
           }
