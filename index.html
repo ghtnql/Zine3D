@@ -55,65 +55,9 @@
       var fullscreenButton = document.querySelector("#fullscreen-button");
       var startScreen = document.querySelector("#start-screen");
       var startButton = document.querySelector("#start-button");
-      var isStandalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
-      var fullscreenSupported = !!(document.fullscreenEnabled || document.webkitFullscreenEnabled);
       var unityInstance = null;
 
-      function lockLandscape() {
-        if (screen.orientation && typeof screen.orientation.lock === "function") {
-          return screen.orientation.lock("landscape").catch(function () {
-            // 일반 브라우저 탭에서는 잠금이 거부될 수 있으며 CSS 회전이 대신 처리합니다.
-          });
-        }
-        return Promise.resolve();
-      }
-
-      function requestGameFullscreen() {
-        if (container.requestFullscreen) {
-          return container.requestFullscreen();
-        }
-        if (container.webkitRequestFullscreen) {
-          container.webkitRequestFullscreen();
-          return Promise.resolve();
-        }
-        return Promise.reject(new Error("Fullscreen API is unavailable"));
-      }
-
-      function isGameFullscreen() {
-        return !!(document.fullscreenElement || document.webkitFullscreenElement);
-      }
-
-      async function enterGameFullscreen() {
-        try {
-          if (!isGameFullscreen()) {
-            await requestGameFullscreen();
-          }
-          await lockLandscape();
-          window.dispatchEvent(new Event("resize"));
-          return true;
-        } catch (error) {
-          if (unityInstance) {
-            unityInstance.SetFullscreen(1);
-          }
-          return false;
-        }
-      }
-
-      if (isStandalone) {
-        lockLandscape();
-      }
-
-      function handleFullscreenChange() {
-        if (isGameFullscreen()) {
-          lockLandscape();
-          window.dispatchEvent(new Event("resize"));
-        }
-      }
-
-      document.addEventListener("fullscreenchange", handleFullscreenChange);
-      document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
-
-      startButton.addEventListener("click", async function () {
+      startButton.addEventListener("click", function () {
         if (!unityInstance) {
           if (startButton.dataset.error === "true") {
             window.location.reload();
@@ -122,8 +66,8 @@
         }
 
         startButton.disabled = true;
-        if (fullscreenSupported) {
-          await enterGameFullscreen();
+        if (document.fullscreenEnabled) {
+          unityInstance.SetFullscreen(1);
         }
 
         startScreen.classList.add("is-hidden");
@@ -168,7 +112,6 @@
         productName: "Zine 3D",
         productVersion: "2.3.0",
         autoSyncPersistentDataPath: true,
-        matchWebGLToCanvasSize: true,
         showBanner: unityShowBanner
       };
 
@@ -187,12 +130,12 @@
           unityInstance = instance;
           loadingBar.classList.remove("is-visible");
           startButton.disabled = false;
-          startButton.textContent = fullscreenSupported ? "전체 화면으로 시작" : "게임 시작";
+          startButton.textContent = document.fullscreenEnabled ? "전체 화면으로 시작" : "게임 시작";
 
-          if (fullscreenSupported) {
+          if (document.fullscreenEnabled) {
             fullscreenButton.classList.add("is-visible");
-            fullscreenButton.addEventListener("click", async function () {
-              await enterGameFullscreen();
+            fullscreenButton.addEventListener("click", function () {
+              unityInstance.SetFullscreen(1);
             });
           }
         }).catch(function (message) {
