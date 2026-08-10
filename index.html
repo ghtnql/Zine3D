@@ -11,7 +11,7 @@
     <title>Zine 3D</title>
     <link rel="icon" type="image/png" href="TemplateData/icon.png">
     <link rel="apple-touch-icon" href="TemplateData/icon.png">
-    <link rel="stylesheet" href="TemplateData/style.css">
+    <link rel="stylesheet" href="TemplateData/style.css?v=2.4.0-kakao-v3">
     <link rel="manifest" href="manifest.webmanifest">
   </head>
   <body>
@@ -77,11 +77,11 @@
     </section>
 
     <script src="leaderboard-config.js"></script>
-    <script src="TemplateData/leaderboard.js"></script>
+    <script src="TemplateData/leaderboard.js?v=2.4.0-kakao-v3"></script>
     <script>
       window.addEventListener("load", function () {
         if ("serviceWorker" in navigator) {
-          navigator.serviceWorker.register("ServiceWorker.js");
+          navigator.serviceWorker.register("ServiceWorker.js?v=2.4.0-kakao-v3");
         }
       });
 
