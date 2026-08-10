@@ -27,7 +27,42 @@
         <div id="loading-label">게임을 불러오는 중…</div>
       </section>
 
+      <button id="leaderboard-button" type="button" aria-label="랭킹 보기">🏆 랭킹</button>
       <button id="fullscreen-button" type="button" aria-label="전체 화면">⛶</button>
+      <section id="leaderboard-modal" aria-hidden="true">
+        <button id="leaderboard-backdrop" type="button" aria-label="랭킹 닫기"></button>
+        <article id="leaderboard-card" role="dialog" aria-modal="true" aria-labelledby="leaderboard-title">
+          <header class="leaderboard-header">
+            <div>
+              <span class="leaderboard-kicker">ZINE 3D</span>
+              <h2 id="leaderboard-title">명예의 전당</h2>
+            </div>
+            <button id="leaderboard-close" type="button" aria-label="랭킹 닫기">×</button>
+          </header>
+
+          <div id="leaderboard-run" hidden></div>
+
+          <form id="nickname-form">
+            <label for="nickname-input">내 닉네임</label>
+            <div class="nickname-controls">
+              <input id="nickname-input" name="nickname" type="text" minlength="2" maxlength="16" autocomplete="nickname" placeholder="닉네임 2~16자" required>
+              <button id="nickname-save" type="submit">저장</button>
+            </div>
+          </form>
+
+          <p id="leaderboard-status" role="status"></p>
+
+          <div class="leaderboard-table-wrap">
+            <table class="leaderboard-table">
+              <thead><tr><th>순위</th><th>닉네임</th><th>코인</th><th>시간</th></tr></thead>
+              <tbody id="leaderboard-rows">
+                <tr><td colspan="4" class="leaderboard-empty">랭킹을 불러오는 중…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
       <div id="unity-warning"></div>
     </main>
 
@@ -41,6 +76,8 @@
       </div>
     </section>
 
+    <script src="leaderboard-config.js"></script>
+    <script src="TemplateData/leaderboard.js"></script>
     <script>
       window.addEventListener("load", function () {
         if ("serviceWorker" in navigator) {
@@ -144,13 +181,13 @@
       var buildUrl = "Build";
       var loaderUrl = buildUrl + "/b23dd96997961653e2825455633aac82.loader.js";
       var config = {
-        dataUrl: buildUrl + "/9026780b0a808938b7963cf141747122.data.unityweb",
-        frameworkUrl: buildUrl + "/b0663254000dd8daf4cf3a624ba37862.framework.js.unityweb",
-        codeUrl: buildUrl + "/361d5e0c47a350a8dc461610527df2ed.wasm.unityweb",
+        dataUrl: buildUrl + "/cc44b80530f526d23e8daa083492b7b8.data.unityweb",
+        frameworkUrl: buildUrl + "/5a44f6daca47c60803fc479e9735691e.framework.js.unityweb",
+        codeUrl: buildUrl + "/230a1f275b4640d773fadbccc3110b71.wasm.unityweb",
         streamingAssetsUrl: "StreamingAssets",
         companyName: "ghtnql",
         productName: "Zine 3D",
-        productVersion: "2.3.0",
+        productVersion: "2.4.0",
         autoSyncPersistentDataPath: true,
         showBanner: unityShowBanner
       };
@@ -171,6 +208,7 @@
           progressBarFull.style.width = (100 * progress) + "%";
         }).then(function (instance) {
           unityInstance = instance;
+          window.zineUnityInstance = instance;
           loadingBar.classList.remove("is-visible");
           startButton.disabled = false;
           startButton.textContent = document.fullscreenEnabled ? "전체 화면으로 시작" : "게임 시작";
