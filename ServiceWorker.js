@@ -1,11 +1,10 @@
-const cacheName = "ghtnql-Zine 3D-2.3.0-unlocked-v6";
+const cacheName = "ghtnql-Zine 3D-2.3.0-landscape-v2";
 const contentToCache = [
   "./",
   "index.html",
   "manifest.webmanifest",
   "TemplateData/style.css",
   "TemplateData/icon.png",
-  "TemplateData/start-screen.png",
   "Build/b23dd96997961653e2825455633aac82.loader.js",
   "Build/b0663254000dd8daf4cf3a624ba37862.framework.js.unityweb",
   "Build/9026780b0a808938b7963cf141747122.data.unityweb",

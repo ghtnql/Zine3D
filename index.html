@@ -31,15 +31,6 @@
       <div id="unity-warning"></div>
     </main>
 
-    <section id="start-screen" aria-labelledby="start-title">
-      <img id="start-preview" src="TemplateData/start-screen.png" alt="노란 지네 캐릭터가 초록색 길 위에 서 있는 게임 화면">
-      <div id="start-panel">
-        <p id="start-kicker">ZINE 3D</p>
-        <h1 id="start-title">전체 화면을 눌러주세요</h1>
-        <button id="start-button" type="button" disabled>게임 준비 중…</button>
-      </div>
-    </section>
-
     <script>
       window.addEventListener("load", function () {
         if ("serviceWorker" in navigator) {
@@ -53,36 +44,25 @@
       var progressBarFull = document.querySelector("#unity-progress-bar-full");
       var warningBanner = document.querySelector("#unity-warning");
       var fullscreenButton = document.querySelector("#fullscreen-button");
-      var startScreen = document.querySelector("#start-screen");
-      var startButton = document.querySelector("#start-button");
-      var unityInstance = null;
+      var isStandalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
 
-      startButton.addEventListener("click", function () {
-        if (!unityInstance) {
-          if (startButton.dataset.error === "true") {
-            window.location.reload();
-          }
-          return;
+      function lockLandscape() {
+        if (screen.orientation && typeof screen.orientation.lock === "function") {
+          screen.orientation.lock("landscape").catch(function () {
+            // 일반 브라우저 탭에서는 잠금이 거부될 수 있으며 CSS 회전이 대신 처리합니다.
+          });
         }
-
-        startButton.disabled = true;
-        if (document.fullscreenEnabled) {
-          unityInstance.SetFullscreen(1);
-        }
-
-        startScreen.classList.add("is-hidden");
-        startScreen.setAttribute("aria-hidden", "true");
-        canvas.focus();
-        window.setTimeout(function () {
-          startScreen.remove();
-        }, 450);
-      });
-
-      function showStartError() {
-        startButton.dataset.error = "true";
-        startButton.disabled = false;
-        startButton.textContent = "다시 불러오기";
       }
+
+      if (isStandalone) {
+        lockLandscape();
+      }
+
+      document.addEventListener("fullscreenchange", function () {
+        if (document.fullscreenElement) {
+          lockLandscape();
+        }
+      });
 
       function unityShowBanner(message, type) {
         var item = document.createElement("div");
@@ -126,11 +106,9 @@
       script.onload = function () {
         createUnityInstance(canvas, config, function (progress) {
           progressBarFull.style.width = (100 * progress) + "%";
-        }).then(function (instance) {
-          unityInstance = instance;
+        }).then(function (unityInstance) {
           loadingBar.classList.remove("is-visible");
-          startButton.disabled = false;
-          startButton.textContent = document.fullscreenEnabled ? "전체 화면으로 시작" : "게임 시작";
+          canvas.focus();
 
           if (document.fullscreenEnabled) {
             fullscreenButton.classList.add("is-visible");
@@ -139,12 +117,10 @@
             });
           }
         }).catch(function (message) {
-          showStartError();
           unityShowBanner(message, "error");
         });
       };
       script.onerror = function () {
-        showStartError();
         unityShowBanner("게임 로더를 내려받지 못했습니다. 네트워크 연결을 확인해주세요.", "error");
       };
       document.body.appendChild(script);
