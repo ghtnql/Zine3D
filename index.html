@@ -11,7 +11,7 @@
     <title>Zine 3D</title>
     <link rel="icon" type="image/png" href="TemplateData/icon.png">
     <link rel="apple-touch-icon" href="TemplateData/icon.png">
-    <link rel="stylesheet" href="TemplateData/style.css?v=2.4.0-kakao-v3">
+    <link rel="stylesheet" href="TemplateData/style.css?v=2.4.0-ui-v4">
     <link rel="manifest" href="manifest.webmanifest">
   </head>
   <body>
@@ -77,11 +77,11 @@
     </section>
 
     <script src="leaderboard-config.js"></script>
-    <script src="TemplateData/leaderboard.js?v=2.4.0-kakao-v3"></script>
+    <script src="TemplateData/leaderboard.js?v=2.4.0-ui-v4"></script>
     <script>
       window.addEventListener("load", function () {
         if ("serviceWorker" in navigator) {
-          navigator.serviceWorker.register("ServiceWorker.js?v=2.4.0-kakao-v3");
+          navigator.serviceWorker.register("ServiceWorker.js?v=2.4.0-ui-v4");
         }
       });
 
@@ -98,6 +98,7 @@
       var isKakaoBrowser = /KAKAOTALK/i.test(navigator.userAgent);
       var isStandalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
       var unityInstance = null;
+      var canFullscreen = document.fullscreenEnabled || typeof container.webkitRequestFullscreen === "function";
 
       function markLandscapeFullscreenRequested() {
         document.documentElement.classList.add("fullscreen-requested");
@@ -109,22 +110,38 @@
 
       function syncLandscapeFallback() {
         var viewportPortrait = window.innerHeight > window.innerWidth;
-        var screenPortrait = window.screen && window.screen.height > window.screen.width;
-        var orientationType = window.screen && window.screen.orientation && window.screen.orientation.type;
-        var orientationPortrait = typeof orientationType === "string" && orientationType.indexOf("portrait") === 0;
-        var shouldForce = viewportPortrait || (isKakaoBrowser && (screenPortrait || orientationPortrait));
-        if (shouldForce) {
+        if (viewportPortrait) {
           document.documentElement.classList.add("force-landscape");
         } else {
           document.documentElement.classList.remove("force-landscape");
         }
       }
 
-      function prepareKakaoStart() {
+      function showKakaoUnsupported() {
         document.documentElement.classList.add("kakao-browser");
-        startTitle.textContent = "가로 전체화면으로 시작";
-        startDescription.textContent = "전체화면이 거부되면 화면을 가로로 돌려서 계속 실행합니다.";
+        startTitle.textContent = "카카오톡 브라우저에서는 실행할 수 없습니다";
+        startDescription.textContent = "오른쪽 위 메뉴에서 다른 브라우저로 열어주세요.";
         startDescription.hidden = false;
+        startButton.hidden = true;
+        loadingBar.classList.remove("is-visible");
+      }
+
+      function requestGameFullscreen() {
+        markLandscapeFullscreenRequested();
+        var requestFullscreen = container.requestFullscreen || container.webkitRequestFullscreen;
+        if (typeof requestFullscreen === "function") {
+          try {
+            var fullscreenResult = requestFullscreen.call(container);
+            if (fullscreenResult && typeof fullscreenResult.catch === "function") {
+              fullscreenResult.catch(function () {
+                // 전체화면이 거부되면 CSS 가로 모드로 계속 실행합니다.
+              });
+            }
+          } catch (_error) {
+            // 전체화면이 거부되면 CSS 가로 모드로 계속 실행합니다.
+          }
+        }
+        lockLandscape();
       }
 
       function showStartError() {
@@ -145,15 +162,7 @@
           return;
         }
         startButton.disabled = true;
-        if (document.fullscreenEnabled || isKakaoBrowser) {
-          markLandscapeFullscreenRequested();
-          try {
-            unityInstance.SetFullscreen(1);
-          } catch (_error) {
-            // 카카오톡 WebView가 전체화면을 거부해도 CSS 가로 모드로 계속 실행합니다.
-          }
-          lockLandscape();
-        }
+        requestGameFullscreen();
         startScreen.classList.add("is-hidden");
         startScreen.setAttribute("aria-hidden", "true");
         canvas.focus();
@@ -182,7 +191,7 @@
       }
 
       if (isKakaoBrowser) {
-        prepareKakaoStart();
+        showKakaoUnsupported();
       }
 
       syncLandscapeFallback();
@@ -191,8 +200,11 @@
 
       document.addEventListener("fullscreenchange", function () {
         syncLandscapeFallback();
-        if (document.fullscreenElement) {
+        if (document.fullscreenElement || document.webkitFullscreenElement) {
           lockLandscape();
+        } else {
+          document.documentElement.classList.remove("fullscreen-requested");
+          canvas.classList.remove("is-landscape-fullscreen");
         }
       });
 
@@ -231,42 +243,38 @@
         config.devicePixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
       }
 
-      loadingBar.classList.add("is-visible");
+      if (!isKakaoBrowser) {
+        loadingBar.classList.add("is-visible");
 
-      var script = document.createElement("script");
-      script.src = loaderUrl;
-      script.onload = function () {
-        createUnityInstance(canvas, config, function (progress) {
-          progressBarFull.style.width = (100 * progress) + "%";
-        }).then(function (instance) {
+        var script = document.createElement("script");
+        script.src = loaderUrl;
+        script.onload = function () {
+          createUnityInstance(canvas, config, function (progress) {
+            progressBarFull.style.width = (100 * progress) + "%";
+          }).then(function (instance) {
           unityInstance = instance;
           window.zineUnityInstance = instance;
           loadingBar.classList.remove("is-visible");
           startButton.disabled = false;
-          startButton.textContent = (document.fullscreenEnabled || isKakaoBrowser) ? "전체 화면으로 시작" : "게임 시작";
+          startButton.textContent = canFullscreen ? "전체 화면으로 시작" : "게임 시작";
 
-          if (document.fullscreenEnabled || isKakaoBrowser) {
+          if (canFullscreen) {
             fullscreenButton.classList.add("is-visible");
             fullscreenButton.addEventListener("click", function () {
-              markLandscapeFullscreenRequested();
-              try {
-                unityInstance.SetFullscreen(1);
-              } catch (_error) {
-                // CSS 가로 모드는 유지합니다.
-              }
-              lockLandscape();
+              requestGameFullscreen();
             });
           }
-        }).catch(function (message) {
-          unityShowBanner(message, "error");
+          }).catch(function (message) {
+            unityShowBanner(message, "error");
+            showStartError();
+          });
+        };
+        script.onerror = function () {
+          unityShowBanner("게임 로더를 내려받지 못했습니다. 네트워크 연결을 확인해주세요.", "error");
           showStartError();
-        });
-      };
-      script.onerror = function () {
-        unityShowBanner("게임 로더를 내려받지 못했습니다. 네트워크 연결을 확인해주세요.", "error");
-        showStartError();
-      };
-      document.body.appendChild(script);
+        };
+        document.body.appendChild(script);
+      }
     </script>
   </body>
 </html>
