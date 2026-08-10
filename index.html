@@ -102,6 +102,22 @@
       function markLandscapeFullscreenRequested() {
         document.documentElement.classList.add("fullscreen-requested");
         canvas.classList.add("is-landscape-fullscreen");
+        syncLandscapeFallback();
+        window.setTimeout(syncLandscapeFallback, 250);
+        window.setTimeout(syncLandscapeFallback, 800);
+      }
+
+      function syncLandscapeFallback() {
+        var viewportPortrait = window.innerHeight > window.innerWidth;
+        var screenPortrait = window.screen && window.screen.height > window.screen.width;
+        var orientationType = window.screen && window.screen.orientation && window.screen.orientation.type;
+        var orientationPortrait = typeof orientationType === "string" && orientationType.indexOf("portrait") === 0;
+        var shouldForce = viewportPortrait || (isKakaoBrowser && (screenPortrait || orientationPortrait));
+        if (shouldForce) {
+          document.documentElement.classList.add("force-landscape");
+        } else {
+          document.documentElement.classList.remove("force-landscape");
+        }
       }
 
       function prepareKakaoStart() {
@@ -169,7 +185,12 @@
         prepareKakaoStart();
       }
 
+      syncLandscapeFallback();
+      window.addEventListener("resize", syncLandscapeFallback);
+      window.addEventListener("orientationchange", syncLandscapeFallback);
+
       document.addEventListener("fullscreenchange", function () {
+        syncLandscapeFallback();
         if (document.fullscreenElement) {
           lockLandscape();
         }

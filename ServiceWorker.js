@@ -1,4 +1,4 @@
-const cacheName = "ghtnql-Zine 3D-2.4.0-kakao-landscape-v1";
+const cacheName = "ghtnql-Zine 3D-2.4.0-kakao-force-landscape-v2";
 const contentToCache = [
   "./",
   "index.html",
