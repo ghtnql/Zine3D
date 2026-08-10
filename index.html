@@ -104,13 +104,11 @@
         canvas.classList.add("is-landscape-fullscreen");
       }
 
-      function showKakaoUnsupported() {
+      function prepareKakaoStart() {
         document.documentElement.classList.add("kakao-browser");
-        startTitle.textContent = "카카오톡 브라우저에서는 실행할 수 없습니다";
-        startDescription.textContent = "오른쪽 위 메뉴에서 다른 브라우저로 열어주세요.";
+        startTitle.textContent = "가로 전체화면으로 시작";
+        startDescription.textContent = "전체화면이 거부되면 화면을 가로로 돌려서 계속 실행합니다.";
         startDescription.hidden = false;
-        startButton.hidden = true;
-        loadingBar.classList.remove("is-visible");
       }
 
       function showStartError() {
@@ -127,13 +125,18 @@
           window.location.reload();
           return;
         }
-        if (!unityInstance || isKakaoBrowser) {
+        if (!unityInstance) {
           return;
         }
         startButton.disabled = true;
-        if (document.fullscreenEnabled) {
+        if (document.fullscreenEnabled || isKakaoBrowser) {
           markLandscapeFullscreenRequested();
-          unityInstance.SetFullscreen(1);
+          try {
+            unityInstance.SetFullscreen(1);
+          } catch (_error) {
+            // 카카오톡 WebView가 전체화면을 거부해도 CSS 가로 모드로 계속 실행합니다.
+          }
+          lockLandscape();
         }
         startScreen.classList.add("is-hidden");
         startScreen.setAttribute("aria-hidden", "true");
@@ -145,14 +148,25 @@
 
       function lockLandscape() {
         if (screen.orientation && typeof screen.orientation.lock === "function") {
-          screen.orientation.lock("landscape").catch(function () {
-            // 일반 브라우저 탭에서는 잠금이 거부될 수 있으며 CSS 회전이 대신 처리합니다.
-          });
+          try {
+            var lockResult = screen.orientation.lock("landscape");
+            if (lockResult && typeof lockResult.catch === "function") {
+              lockResult.catch(function () {
+                // 일반 브라우저 탭에서는 잠금이 거부될 수 있으며 CSS 회전이 대신 처리합니다.
+              });
+            }
+          } catch (_error) {
+            // 일부 WebView는 동기적으로 거부하며 CSS 회전이 대신 처리합니다.
+          }
         }
       }
 
       if (isStandalone) {
         lockLandscape();
+      }
+
+      if (isKakaoBrowser) {
+        prepareKakaoStart();
       }
 
       document.addEventListener("fullscreenchange", function () {
@@ -196,10 +210,7 @@
         config.devicePixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
       }
 
-      if (isKakaoBrowser) {
-        showKakaoUnsupported();
-      } else {
-        loadingBar.classList.add("is-visible");
+      loadingBar.classList.add("is-visible");
 
       var script = document.createElement("script");
       script.src = loaderUrl;
@@ -211,13 +222,18 @@
           window.zineUnityInstance = instance;
           loadingBar.classList.remove("is-visible");
           startButton.disabled = false;
-          startButton.textContent = document.fullscreenEnabled ? "전체 화면으로 시작" : "게임 시작";
+          startButton.textContent = (document.fullscreenEnabled || isKakaoBrowser) ? "전체 화면으로 시작" : "게임 시작";
 
-          if (document.fullscreenEnabled) {
+          if (document.fullscreenEnabled || isKakaoBrowser) {
             fullscreenButton.classList.add("is-visible");
             fullscreenButton.addEventListener("click", function () {
               markLandscapeFullscreenRequested();
-              unityInstance.SetFullscreen(1);
+              try {
+                unityInstance.SetFullscreen(1);
+              } catch (_error) {
+                // CSS 가로 모드는 유지합니다.
+              }
+              lockLandscape();
             });
           }
         }).catch(function (message) {
@@ -230,7 +246,6 @@
         showStartError();
       };
       document.body.appendChild(script);
-      }
     </script>
   </body>
 </html>
