@@ -1,4 +1,4 @@
-const cacheName = "ghtnql-Zine 3D-2.3.0-fullscreen-v4";
+const cacheName = "ghtnql-Zine 3D-2.3.0-unlocked-v6";
 const contentToCache = [
   "./",
   "index.html",
