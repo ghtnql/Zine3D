@@ -224,3 +224,67 @@ body {
     transform-origin: center;
   }
 }
+
+
+/* Start screen */
+#start-screen {
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  display: grid;
+  place-items: end center;
+  overflow: hidden;
+  background: #03150a;
+  opacity: 1;
+  transition: opacity 320ms ease, visibility 320ms ease;
+}
+#start-screen.is-hidden { visibility: hidden; opacity: 0; pointer-events: none; }
+#start-preview { position: absolute; z-index: 0; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 42%; }
+#start-screen::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 38%, rgba(0, 12, 4, 0.16) 58%, rgba(0, 12, 4, 0.92) 100%);
+  pointer-events: none;
+}
+#start-panel {
+  position: relative;
+  z-index: 2;
+  width: min(calc(100% - 32px), 520px);
+  margin: 0 auto max(24px, env(safe-area-inset-bottom));
+  color: #fff;
+  text-align: center;
+}
+#start-kicker { margin: 0 0 6px; color: #fffb00; font: 800 12px/1.2 system-ui, sans-serif; letter-spacing: 0.18em; }
+#start-title { margin: 0; font: 800 clamp(22px, 5vw, 34px)/1.15 system-ui, sans-serif; text-wrap: balance; text-shadow: 0 2px 12px rgba(0, 0, 0, 0.72); }
+#start-description { margin: 10px auto 0; max-width: 32rem; color: rgba(255, 255, 255, 0.86); font: 600 15px/1.5 system-ui, sans-serif; text-wrap: balance; }
+#start-button {
+  width: 100%;
+  min-height: 54px;
+  margin-top: 18px;
+  border: 0;
+  border-radius: 999px;
+  background: #fffb00;
+  color: #07130d;
+  font: 900 16px/1 system-ui, sans-serif;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.34);
+  cursor: pointer;
+}
+#start-button:disabled { cursor: wait; opacity: 0.62; }
+#start-button[hidden] { display: none; }
+html.kakao-browser #start-panel {
+  margin-bottom: max(32px, env(safe-area-inset-bottom));
+  padding: 22px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 22px;
+  background: rgba(0, 12, 4, 0.78);
+  backdrop-filter: blur(12px);
+}
+@media (orientation: landscape) {
+  #start-panel { width: min(calc(100% - 48px), 560px); margin-bottom: max(18px, env(safe-area-inset-bottom)); }
+  #start-button { min-height: 48px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #start-screen { transition: none; }
+}

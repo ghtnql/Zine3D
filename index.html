@@ -31,6 +31,16 @@
       <div id="unity-warning"></div>
     </main>
 
+    <section id="start-screen" aria-labelledby="start-title">
+      <img id="start-preview" src="TemplateData/start-screen.png" alt="노란 지네 캐릭터가 초록색 길 위에 서 있는 게임 화면">
+      <div id="start-panel">
+        <p id="start-kicker">ZINE 3D</p>
+        <h1 id="start-title">전체 화면으로 시작</h1>
+        <p id="start-description" hidden></p>
+        <button id="start-button" type="button" disabled>게임 준비 중…</button>
+      </div>
+    </section>
+
     <script>
       window.addEventListener("load", function () {
         if ("serviceWorker" in navigator) {
@@ -44,12 +54,57 @@
       var progressBarFull = document.querySelector("#unity-progress-bar-full");
       var warningBanner = document.querySelector("#unity-warning");
       var fullscreenButton = document.querySelector("#fullscreen-button");
+      var startScreen = document.querySelector("#start-screen");
+      var startButton = document.querySelector("#start-button");
+      var startTitle = document.querySelector("#start-title");
+      var startDescription = document.querySelector("#start-description");
+      var isKakaoBrowser = /KAKAOTALK/i.test(navigator.userAgent);
       var isStandalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
+      var unityInstance = null;
 
       function markLandscapeFullscreenRequested() {
         document.documentElement.classList.add("fullscreen-requested");
         canvas.classList.add("is-landscape-fullscreen");
       }
+
+      function showKakaoUnsupported() {
+        document.documentElement.classList.add("kakao-browser");
+        startTitle.textContent = "카카오톡 브라우저에서는 실행할 수 없습니다";
+        startDescription.textContent = "오른쪽 위 메뉴에서 다른 브라우저로 열어주세요.";
+        startDescription.hidden = false;
+        startButton.hidden = true;
+        loadingBar.classList.remove("is-visible");
+      }
+
+      function showStartError() {
+        startTitle.textContent = "게임을 불러오지 못했습니다";
+        startDescription.textContent = "네트워크 연결을 확인한 뒤 다시 시도해주세요.";
+        startDescription.hidden = false;
+        startButton.disabled = false;
+        startButton.textContent = "다시 불러오기";
+        startButton.dataset.action = "reload";
+      }
+
+      startButton.addEventListener("click", function () {
+        if (startButton.dataset.action === "reload") {
+          window.location.reload();
+          return;
+        }
+        if (!unityInstance || isKakaoBrowser) {
+          return;
+        }
+        startButton.disabled = true;
+        if (document.fullscreenEnabled) {
+          markLandscapeFullscreenRequested();
+          unityInstance.SetFullscreen(1);
+        }
+        startScreen.classList.add("is-hidden");
+        startScreen.setAttribute("aria-hidden", "true");
+        canvas.focus();
+        window.setTimeout(function () {
+          startScreen.remove();
+        }, 450);
+      });
 
       function lockLandscape() {
         if (screen.orientation && typeof screen.orientation.lock === "function") {
@@ -104,16 +159,21 @@
         config.devicePixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
       }
 
-      loadingBar.classList.add("is-visible");
+      if (isKakaoBrowser) {
+        showKakaoUnsupported();
+      } else {
+        loadingBar.classList.add("is-visible");
 
       var script = document.createElement("script");
       script.src = loaderUrl;
       script.onload = function () {
         createUnityInstance(canvas, config, function (progress) {
           progressBarFull.style.width = (100 * progress) + "%";
-        }).then(function (unityInstance) {
+        }).then(function (instance) {
+          unityInstance = instance;
           loadingBar.classList.remove("is-visible");
-          canvas.focus();
+          startButton.disabled = false;
+          startButton.textContent = document.fullscreenEnabled ? "전체 화면으로 시작" : "게임 시작";
 
           if (document.fullscreenEnabled) {
             fullscreenButton.classList.add("is-visible");
@@ -124,12 +184,15 @@
           }
         }).catch(function (message) {
           unityShowBanner(message, "error");
+          showStartError();
         });
       };
       script.onerror = function () {
         unityShowBanner("게임 로더를 내려받지 못했습니다. 네트워크 연결을 확인해주세요.", "error");
+        showStartError();
       };
       document.body.appendChild(script);
+      }
     </script>
   </body>
 </html>
