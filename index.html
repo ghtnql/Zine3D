@@ -28,8 +28,6 @@
       </section>
 
       <button id="fullscreen-button" type="button" aria-label="전체 화면">⛶</button>
-      <div id="install-hint">Safari 공유 버튼에서 ‘홈 화면에 추가’를 선택하면 앱처럼 실행할 수 있습니다.</div>
-      <div id="orientation-hint">아이폰을 가로로 돌려주세요.</div>
       <div id="unity-warning"></div>
     </main>
 
@@ -46,16 +44,25 @@
       var progressBarFull = document.querySelector("#unity-progress-bar-full");
       var warningBanner = document.querySelector("#unity-warning");
       var fullscreenButton = document.querySelector("#fullscreen-button");
-      var installHint = document.querySelector("#install-hint");
-      var isAppleMobile = /iPhone|iPad|iPod/i.test(navigator.userAgent);
       var isStandalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
 
-      if (isAppleMobile && !isStandalone) {
-        installHint.classList.add("is-visible");
-        window.setTimeout(function () {
-          installHint.classList.remove("is-visible");
-        }, 9000);
+      function lockLandscape() {
+        if (screen.orientation && typeof screen.orientation.lock === "function") {
+          screen.orientation.lock("landscape").catch(function () {
+            // 일반 브라우저 탭에서는 잠금이 거부될 수 있으며 CSS 회전이 대신 처리합니다.
+          });
+        }
       }
+
+      if (isStandalone) {
+        lockLandscape();
+      }
+
+      document.addEventListener("fullscreenchange", function () {
+        if (document.fullscreenElement) {
+          lockLandscape();
+        }
+      });
 
       function unityShowBanner(message, type) {
         var item = document.createElement("div");
@@ -88,7 +95,7 @@
         showBanner: unityShowBanner
       };
 
-      if (/iPhone|iPad|iPod|Android|Mobile/i.test(navigator.userAgent)) {
+      if (window.matchMedia("(pointer: coarse)").matches) {
         config.devicePixelRatio = Math.min(window.devicePixelRatio || 1, 1.5);
       }
 
@@ -103,7 +110,7 @@
           loadingBar.classList.remove("is-visible");
           canvas.focus();
 
-          if (document.fullscreenEnabled && !isAppleMobile) {
+          if (document.fullscreenEnabled) {
             fullscreenButton.classList.add("is-visible");
             fullscreenButton.addEventListener("click", function () {
               unityInstance.SetFullscreen(1);
