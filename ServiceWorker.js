@@ -1,4 +1,4 @@
-const cacheName = "ghtnql-Zine 3D-2.4.0-ui-v4";
+const cacheName = "ghtnql-Zine 3D-2.4.0-ui-v5";
 const contentToCache = [
   "./",
   "index.html",
@@ -34,11 +34,21 @@ self.addEventListener("activate", function (event) {
 });
 
 self.addEventListener("fetch", function (event) {
-  if (event.request.method !== "GET") {
-    return;
-  }
+  if (event.request.method !== "GET") return;
 
-  if (new URL(event.request.url).pathname.endsWith("/leaderboard-config.js")) {
+  var pathname = new URL(event.request.url).pathname;
+  if (pathname.endsWith("/leaderboard-config.js")) return;
+
+  if (pathname.endsWith("/TemplateData/leaderboard.js")) {
+    event.respondWith(
+      fetch(event.request).then(function (response) {
+        if (response && response.ok) {
+          var copy = response.clone();
+          caches.open(cacheName).then(function (cache) { cache.put(event.request, copy); });
+        }
+        return response;
+      }).catch(function () { return caches.match(event.request); })
+    );
     return;
   }
 
@@ -47,15 +57,11 @@ self.addEventListener("fetch", function (event) {
       fetch(event.request).then(function (response) {
         if (response && response.ok) {
           var copy = response.clone();
-          caches.open(cacheName).then(function (cache) {
-            cache.put(event.request, copy);
-          });
+          caches.open(cacheName).then(function (cache) { cache.put(event.request, copy); });
         }
         return response;
       }).catch(function () {
-        return caches.match(event.request).then(function (cached) {
-          return cached || caches.match("index.html");
-        });
+        return caches.match(event.request).then(function (cached) { return cached || caches.match("index.html"); });
       })
     );
     return;
@@ -63,19 +69,11 @@ self.addEventListener("fetch", function (event) {
 
   event.respondWith(
     caches.match(event.request).then(function (cached) {
-      if (cached) {
-        return cached;
-      }
-
+      if (cached) return cached;
       return fetch(event.request).then(function (response) {
-        if (!response || !response.ok) {
-          return response;
-        }
-
+        if (!response || !response.ok) return response;
         var copy = response.clone();
-        caches.open(cacheName).then(function (cache) {
-          cache.put(event.request, copy);
-        });
+        caches.open(cacheName).then(function (cache) { cache.put(event.request, copy); });
         return response;
       });
     })
