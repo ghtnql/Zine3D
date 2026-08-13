@@ -8,9 +8,9 @@ const contentToCache = [
   "TemplateData/icon.png",
   "TemplateData/start-screen.png",
   "Build/b23dd96997961653e2825455633aac82.loader.js",
-  "Build/5a44f6daca47c60803fc479e9735691e.framework.js.unityweb",
-  "Build/cc44b80530f526d23e8daa083492b7b8.data.unityweb",
-  "Build/230a1f275b4640d773fadbccc3110b71.wasm.unityweb"
+  "Build/098c12ac9dd5c9b3469d5aad0108741b.framework.js.unityweb",
+  "Build/90ea29f0553bc8e69cdd13fce0d7fbf8.data.unityweb",
+  "Build/3ecb341605b9ae3914713079c69102ad.wasm.unityweb"
 ];
 
 self.addEventListener("install", function (event) {

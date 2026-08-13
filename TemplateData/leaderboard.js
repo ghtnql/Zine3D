@@ -20,7 +20,9 @@
   installBrowserFixes();
   setEnabled(true);
 
-  if (credentials && credentials.nickname) nicknameInput.value = credentials.nickname;
+  if (credentials && credentials.nickname) {
+    nicknameInput.value = credentials.nickname;
+  }
 
   function isIOSWebKit() {
     var ua = navigator.userAgent || "";
@@ -40,8 +42,8 @@
     document.head.appendChild(style);
 
     if (!isIOSWebKit()) return;
-    document.documentElement.classList.add("ios-webkit");
 
+    document.documentElement.classList.add("ios-webkit");
     var gate = document.createElement("div");
     gate.id = "ios-landscape-gate";
     gate.innerHTML = "아이폰을 가로로 돌려주세요<small>iPhone 브라우저에서는 가로 화면에서 터치 좌표를 정확하게 맞춰 실행합니다.</small>";
@@ -87,7 +89,9 @@
     try {
       var stored = window.localStorage.getItem("zineLeaderboardPlayer");
       return stored ? JSON.parse(stored) : null;
-    } catch (_error) { return null; }
+    } catch (_error) {
+      return null;
+    }
   }
 
   function writeCredentials(value) {
@@ -105,7 +109,9 @@
     var hours = Math.floor(totalSeconds / 3600);
     var minutes = Math.floor((totalSeconds % 3600) / 60);
     var seconds = totalSeconds % 60;
-    if (hours > 0) return [hours, minutes, seconds].map(function (part) { return String(part).padStart(2, "0"); }).join(":");
+    if (hours > 0) {
+      return [hours, minutes, seconds].map(function (part) { return String(part).padStart(2, "0"); }).join(":");
+    }
     return [minutes, seconds].map(function (part) { return String(part).padStart(2, "0"); }).join(":");
   }
 
@@ -190,7 +196,9 @@
   function closeModal() {
     modal.classList.remove("is-visible");
     modal.setAttribute("aria-hidden", "true");
-    if (manuallyPaused && window.zineUnityInstance) window.zineUnityInstance.SendMessage("Head", "ResumeAfterLeaderboard");
+    if (manuallyPaused && window.zineUnityInstance) {
+      window.zineUnityInstance.SendMessage("Head", "ResumeAfterLeaderboard");
+    }
     manuallyPaused = false;
   }
 
@@ -255,5 +263,9 @@
     }
   });
 
-  window.ZineLeaderboard = {showGameOver: showGameOver, refresh: loadLeaderboard, setEnabled: setEnabled};
+  window.ZineLeaderboard = {
+    showGameOver: showGameOver,
+    refresh: loadLeaderboard,
+    setEnabled: setEnabled
+  };
 })();
