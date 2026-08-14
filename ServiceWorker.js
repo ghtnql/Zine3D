@@ -1,4 +1,4 @@
-const cacheName = "ghtnql-Zine 3D-2.4.0-ui-v5";
+const cacheName = "ghtnql-Zine 3D-2.4.0-ui-v6";
 const contentToCache = [
   "./",
   "index.html",
@@ -36,7 +36,13 @@ self.addEventListener("activate", function (event) {
 self.addEventListener("fetch", function (event) {
   if (event.request.method !== "GET") return;
 
-  var pathname = new URL(event.request.url).pathname;
+  var requestUrl = new URL(event.request.url);
+
+  // API responses must always come from the network. Caching cross-origin
+  // leaderboard requests leaves players looking at an old ranking snapshot.
+  if (requestUrl.origin !== self.location.origin || requestUrl.pathname.startsWith("/api/")) return;
+
+  var pathname = requestUrl.pathname;
   if (pathname.endsWith("/leaderboard-config.js")) return;
 
   if (pathname.endsWith("/TemplateData/leaderboard.js")) {
