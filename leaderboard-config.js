@@ -1,1 +1,1 @@
-window.ZINE_LEADERBOARD_API = "https://antenna-statewide-flags-shortcuts.trycloudflare.com";
+window.ZINE_LEADERBOARD_API = "https://nikon-sharing-departments-notre.trycloudflare.com";
